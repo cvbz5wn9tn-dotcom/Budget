@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>مدير المصاريف والراتب</title>
+    <style>
+        :root {
+            --primary: #4A90E2;
+            --success: #2ECC71;
+            --warning: #F1C40F;
+            --danger: #E74C3C;
+            --dark: #2C3E50;
+            --light: #F4F7F6;
+            --white: #FFFFFF;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--light);
+            color: var(--dark);
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        h1, h2, h3 { margin-top: 0; }
+        .card {
+            background: var(--white);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
+        }
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        .grid-3 {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            text-align: center;
+        }
+        .stat-box {
+            background: var(--light);
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+        }
+        .stat-box h3 { margin: 0; font-size: 14px; color: #7f8c8d; }
+        .stat-box p { margin: 10px 0 0; font-size: 20px; font-weight: bold; }
+        
+        input, select, button {
+            width: 100%;
+            padding: 12px;
+            margin-top: 8px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            box-sizing: border-box;
+            font-family: inherit;
+        }
+        button {
+            background: var(--primary);
+            color: var(--white);
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 16px;
+            transition: 0.3s;
+        }
+        button:hover { background: #357ABD; }
+        .btn-danger { background: var(--danger); width: auto; padding: 5px 10px; font-size: 12px;}
+        
+        /* شريط التقدم */
+        .category-group { margin-bottom: 15px; }
+        .category-header { display: flex; justify-content: space-between; font-size: 14px; margin-bottom: 5px; }
+        .progress-bar {
+            width: 100%;
+            height: 12px;
+            background: #e0e0e0;
+            border-radius: 6px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            background: var(--success);
+            transition: width 0.3s ease, background-color 0.3s ease;
+        }
+        
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { text-align: right; padding: 10px; border-bottom: 1px solid #eee; font-size: 14px; }
+        th { color: #7f8c8d; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>💳 نظام الكنترول وتوزيع الراتب</h1>
+
+    <div class="card">
+        <h2>إعداد الراتب الشهري</h2>
+        <div class="grid-2">
+            <input type="number" id="salaryInput" placeholder="أدخل الراتب الإجمالي..." min="0">
+            <button onclick="setSalary()">حفظ الراتب</button>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>ملخص الميزانية</h2>
+        <div class="grid-3">
+            <div class="stat-box">
+                <h3>الميزانية الإجمالية</h3>
+                <p id="totalBudget">0</p>
+            </div>
+            <div class="stat-box">
+                <h3>إجمالي المصروفات</h3>
+                <p id="totalSpent">0</p>
+            </div>
+            <div class="stat-box" style="background-color: #e8f8f5; border-color: var(--success);">
+                <h3>المسموح صرفه يومياً</h3>
+                <p id="dailyAllowance" style="color: var(--success);">0</p>
+                <small style="font-size: 10px; color: #7f8c8d;">(من المتغيرات)</small>
+            </div>
+        </div>
+    </div>
+
+    <div class="card" id="envelopesContainer">
+        <h2>المحافظ (حالة الاستهلاك)</h2>
+        </div>
+
+    <div class="card">
+        <h2>تسجيل مصروف</h2>
+        <input type="text" id="descInput" placeholder="وصف المصروف (مثال: بقالة، بنزين)...">
+        <div class="grid-2">
+            <input type="number" id="amountInput" placeholder="المبلغ..." min="0">
+            <select id="categoryInput">
+                <option value="needs">أساسيات والتزامات (50%)</option>
+                <option value="wants">متغيرات ومعيشة (30%)</option>
+                <option value="savings">ادخار وطوارئ (20%)</option>
+            </select>
+        </div>
+        <button onclick="addTransaction()" style="margin-top: 15px;">+ إضافة المصروف</button>
+    </div>
+
+    <div class="card">
+        <h2>آخر العمليات</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>الوصف</th>
+                    <th>الفئة</th>
+                    <th>المبلغ</th>
+                    <th>إجراء</th>
+                </tr>
+            </thead>
+            <tbody id="historyTable">
+                </tbody>
+        </table>
+    </div>
+
+</div>
+
+<script>
+    // تهيئة البيانات من التخزين المحلي أو إنشاء بيانات جديدة
+    let appData = JSON.parse(localStorage.getItem('budgetAppData')) || {
+        salary: 0,
+        transactions: []
+    };
+
+    // نسب التوزيع (50/30/20)
+    const categories = {
+        needs: { label: 'الأساسيات والالتزامات', percentage: 0.50 },
+        wants: { label: 'المتغيرات والمعيشة', percentage: 0.30 },
+        savings: { label: 'الادخار والطوارئ', percentage: 0.20 }
+    };
+
+    // دالة لحفظ الراتب
+    function setSalary() {
+        const salary = parseFloat(document.getElementById('salaryInput').value);
+        if (isNaN(salary) || salary <= 0) {
+            alert("الرجاء إدخال مبلغ صحيح");
+            return;
+        }
+        appData.salary = salary;
+        saveData();
+        updateUI();
+    }
+
+    // دالة لإضافة مصروف
+    function addTransaction() {
+        const desc = document.getElementById('descInput').value;
+        const amount = parseFloat(document.getElementById('amountInput').value);
+        const category = document.getElementById('categoryInput').value;
+
+        if (!desc || isNaN(amount) || amount <= 0) {
+            alert("الرجاء إدخال الوصف والمبلغ بشكل صحيح");
+            return;
+        }
+
+        appData.transactions.push({
+            id: Date.now(),
+            desc,
+            amount,
+            category,
+            date: new Date().toLocaleDateString('ar-SA')
+        });
+
+        document.getElementById('descInput').value = '';
+        document.getElementById('amountInput').value = '';
+        
+        saveData();
+        updateUI();
+    }
+
+    // دالة لحذف مصروف
+    function deleteTransaction(id) {
+        appData.transactions = appData.transactions.filter(t => t.id !== id);
+        saveData();
+        updateUI();
+    }
+
+    // حفظ البيانات في المتصفح
+    function saveData() {
+        localStorage.setItem('budgetAppData', JSON.stringify(appData));
+    }
+
+    // تحديث الواجهة
+    function updateUI() {
+        // تحديث ملخص الأرقام
+        document.getElementById('salaryInput').value = appData.salary > 0 ? appData.salary : '';
+        document.getElementById('totalBudget').innerText = appData.salary.toFixed(2);
+
+        let totalSpent = 0;
+        let spentByCategory = { needs: 0, wants: 0, savings: 0 };
+
+        appData.transactions.forEach(t => {
+            totalSpent += t.amount;
+            if(spentByCategory[t.category] !== undefined) {
+                spentByCategory[t.category] += t.amount;
+            }
+        });
+
+        document.getElementById('totalSpent').innerText = totalSpent.toFixed(2);
+
+        // حساب المسموح صرفه يومياً للمتغيرات (Wants)
+        const wantsBudget = appData.salary * categories.wants.percentage;
+        const wantsRemaining = wantsBudget - spentByCategory.wants;
+        
+        const today = new Date();
+        const lastDay = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+        const daysLeft = lastDay.getDate() - today.getDate() + 1;
+        
+        const dailyAllowance = wantsRemaining > 0 ? (wantsRemaining / daysLeft) : 0;
+        document.getElementById('dailyAllowance').innerText = dailyAllowance.toFixed(2);
+
+        // تحديث المحافظ (أشرطة التقدم)
+        const envelopesContainer = document.getElementById('envelopesContainer');
+        envelopesContainer.innerHTML = ''; // تفريغ المحتوى
+
+        for (const [key, cat] of Object.entries(categories)) {
+            const budget = appData.salary * cat.percentage;
+            const spent = spentByCategory[key];
+            const remaining = budget - spent;
+            const percentageUsed = budget > 0 ? (spent / budget) * 100 : 0;
+            
+            // تحديد لون الشريط بناءً على الاستهلاك
+            let barColor = 'var(--success)';
+            if (percentageUsed > 75) barColor = 'var(--warning)';
+            if (percentageUsed > 90) barColor = 'var(--danger)';
+
+            const envelopeHTML = `
+                <div class="category-group">
+                    <div class="category-header">
+                        <strong>${cat.label}</strong>
+                        <span>المتبقي: ${remaining.toFixed(2)} من ${budget.toFixed(2)}</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: ${Math.min(percentageUsed, 100)}%; background-color: ${barColor};"></div>
+                    </div>
+                    <div style="font-size: 12px; color: #7f8c8d; text-align: left; margin-top: 3px;">
+                        استُهلك: ${percentageUsed.toFixed(1)}%
+                    </div>
+                </div>
+            `;
+            envelopesContainer.innerHTML += envelopeHTML;
+        }
+
+        // تحديث السجل
+        const historyTable = document.getElementById('historyTable');
+        historyTable.innerHTML = '';
+        
+        // عرض أحدث العمليات أولاً
+        const reversedTransactions = [...appData.transactions].reverse();
+        reversedTransactions.forEach(t => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${t.desc}</td>
+                <td>${categories[t.category].label}</td>
+                <td>${t.amount.toFixed(2)}</td>
+                <td><button class="btn-danger" onclick="deleteTransaction(${t.id})">حذف</button></td>
+            `;
+            historyTable.appendChild(tr);
+        });
+    }
+
+    // تشغيل الواجهة عند فتح الصفحة
+    updateUI();
+</script>
+
+</body>
+</html>
