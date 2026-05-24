@@ -3,311 +3,376 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>مدير المصاريف والراتب</title>
+    <title>لوحة التحكم المالي</title>
     <style>
         :root {
-            --primary: #4A90E2;
-            --success: #2ECC71;
-            --warning: #F1C40F;
+            --primary: #2C3E50;
+            --secondary: #34495E;
+            --accent: #3498DB;
+            --success: #27AE60;
+            --warning: #F39C12;
             --danger: #E74C3C;
-            --dark: #2C3E50;
-            --light: #F4F7F6;
-            --white: #FFFFFF;
+            --bg-color: #F8F9FA;
+            --card-bg: #FFFFFF;
+            --text-main: #2C3E50;
+            --text-muted: #7F8C8D;
         }
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--light);
-            color: var(--dark);
+            background-color: var(--bg-color);
+            color: var(--text-main);
             margin: 0;
-            padding: 20px;
+            padding: 0;
+            padding-bottom: 70px; /* مساحة للشريط السفلي */
         }
         .container {
             max-width: 600px;
-            margin: 0 auto;
+            margin: 20px auto;
+            padding: 0 15px;
         }
-        h1, h2, h3 { margin-top: 0; }
-        .card {
-            background: var(--white);
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-            margin-bottom: 20px;
-        }
-        .grid-2 {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-        }
-        .grid-3 {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 15px;
-            text-align: center;
-        }
-        .stat-box {
-            background: var(--light);
-            padding: 15px;
-            border-radius: 8px;
-            border: 1px solid #e0e0e0;
-        }
-        .stat-box h3 { margin: 0; font-size: 14px; color: #7f8c8d; }
-        .stat-box p { margin: 10px 0 0; font-size: 20px; font-weight: bold; }
+        h2 { font-size: 18px; border-bottom: 2px solid var(--bg-color); padding-bottom: 10px; margin-top: 0; }
         
+        /* البطاقات */
+        .card {
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            margin-bottom: 15px;
+        }
+        
+        /* التخطيط الشبكي */
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; text-align: center; }
+        
+        /* صناديق الإحصائيات */
+        .kpi-box {
+            background: var(--bg-color);
+            padding: 15px 10px;
+            border-radius: 8px;
+            border: 1px solid #EAECEE;
+        }
+        .kpi-box h3 { margin: 0; font-size: 12px; color: var(--text-muted); font-weight: normal; }
+        .kpi-box p { margin: 8px 0 0; font-size: 18px; font-weight: bold; }
+        .kpi-highlight { background-color: #E8F8F5; border-color: var(--success); }
+        .kpi-highlight p { color: var(--success); }
+
+        /* النماذج والأزرار */
         input, select, button {
             width: 100%;
             padding: 12px;
             margin-top: 8px;
-            border: 1px solid #ccc;
+            border: 1px solid #CBD4C2;
             border-radius: 6px;
             box-sizing: border-box;
             font-family: inherit;
         }
+        input:focus, select:focus { outline: none; border-color: var(--accent); }
         button {
-            background: var(--primary);
-            color: var(--white);
+            background: var(--accent);
+            color: white;
             border: none;
             cursor: pointer;
             font-weight: bold;
-            font-size: 16px;
-            transition: 0.3s;
+            transition: background 0.2s;
         }
-        button:hover { background: #357ABD; }
-        .btn-danger { background: var(--danger); width: auto; padding: 5px 10px; font-size: 12px;}
-        
-        /* شريط التقدم */
-        .category-group { margin-bottom: 15px; }
-        .category-header { display: flex; justify-content: space-between; font-size: 14px; margin-bottom: 5px; }
+        button:hover { background: #2980B9; }
+        .btn-danger { background: var(--danger); width: auto; padding: 6px 12px; font-size: 12px;}
+
+        /* مؤشرات الاستهلاك */
+        .progress-container { margin-bottom: 18px; }
+        .progress-header { display: flex; justify-content: space-between; font-size: 14px; margin-bottom: 6px; font-weight: bold; }
+        .progress-sub { display: flex; justify-content: space-between; font-size: 12px; color: var(--text-muted); margin-top: 4px; }
         .progress-bar {
             width: 100%;
-            height: 12px;
-            background: #e0e0e0;
-            border-radius: 6px;
+            height: 10px;
+            background: #EAEDED;
+            border-radius: 5px;
             overflow: hidden;
         }
         .progress-fill {
             height: 100%;
             background: var(--success);
-            transition: width 0.3s ease, background-color 0.3s ease;
+            transition: width 0.4s ease, background-color 0.4s ease;
         }
-        
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        th, td { text-align: right; padding: 10px; border-bottom: 1px solid #eee; font-size: 14px; }
-        th { color: #7f8c8d; }
+
+        /* الجداول */
+        table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        th, td { text-align: right; padding: 10px 5px; border-bottom: 1px solid #F2F3F4; }
+        th { color: var(--text-muted); font-weight: normal; }
+
+        /* شريط التنقل السفلي */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--card-bg);
+            display: flex;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
+            z-index: 1000;
+        }
+        .nav-item {
+            flex: 1;
+            text-align: center;
+            padding: 15px 0;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 14px;
+            border-top: 3px solid transparent;
+            transition: 0.2s;
+        }
+        .nav-item.active {
+            color: var(--accent);
+            border-top-color: var(--accent);
+            background: #F4F6F7;
+        }
+
+        /* التحكم في عرض الصفحات */
+        .page-view { display: none; animation: fadeIn 0.3s; }
+        .page-view.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <h1>💳 نظام الكنترول وتوزيع الراتب</h1>
+    <!-- صفحة لوحة التحكم (Overview) -->
+    <div id="dashboardPage" class="page-view active container">
+        
+        <div class="card">
+            <h2>مؤشرات الميزانية</h2>
+            <div class="grid-3">
+                <div class="kpi-box">
+                    <h3>الراتب المعتمد</h3>
+                    <p id="dashTotalBudget">0</p>
+                </div>
+                <div class="kpi-box">
+                    <h3>إجمالي المستهلك</h3>
+                    <p id="dashTotalSpent">0</p>
+                </div>
+                <div class="kpi-box kpi-highlight">
+                    <h3>متاح يومياً (للمتغيرات)</h3>
+                    <p id="dashDailyAllowance">0</p>
+                </div>
+            </div>
+        </div>
 
-    <div class="card">
-        <h2>إعداد الراتب الشهري</h2>
-        <div class="grid-2">
-            <input type="number" id="salaryInput" placeholder="أدخل الراتب الإجمالي..." min="0">
-            <button onclick="setSalary()">حفظ الراتب</button>
+        <div class="card">
+            <h2>توزيع الاستهلاك</h2>
+            <div id="dashEnvelopes">
+                <!-- سيتم توليد أشرطة التقدم هنا برمجياً -->
+            </div>
         </div>
     </div>
 
-    <div class="card">
-        <h2>ملخص الميزانية</h2>
-        <div class="grid-3">
-            <div class="stat-box">
-                <h3>الميزانية الإجمالية</h3>
-                <p id="totalBudget">0</p>
-            </div>
-            <div class="stat-box">
-                <h3>إجمالي المصروفات</h3>
-                <p id="totalSpent">0</p>
-            </div>
-            <div class="stat-box" style="background-color: #e8f8f5; border-color: var(--success);">
-                <h3>المسموح صرفه يومياً</h3>
-                <p id="dailyAllowance" style="color: var(--success);">0</p>
-                <small style="font-size: 10px; color: #7f8c8d;">(من المتغيرات)</small>
+    <!-- صفحة المدخلات (Entries) -->
+    <div id="entriesPage" class="page-view container">
+        
+        <div class="card">
+            <h2>إعداد الراتب</h2>
+            <div class="grid-2">
+                <input type="number" id="salaryInput" placeholder="المبلغ الإجمالي..." min="0">
+                <button onclick="setSalary()">تحديث الراتب</button>
             </div>
         </div>
-    </div>
 
-    <div class="card" id="envelopesContainer">
-        <h2>المحافظ (حالة الاستهلاك)</h2>
+        <div class="card">
+            <h2>تسجيل عملية جديدة</h2>
+            <input type="text" id="descInput" placeholder="وصف العملية...">
+            <div class="grid-2">
+                <input type="number" id="amountInput" placeholder="المبلغ..." min="0">
+                <select id="categoryInput">
+                    <option value="fixed">مصاريف ثابتة (50%)</option>
+                    <option value="variable">مصاريف متغيرة (30%)</option>
+                    <option value="savings">ادخار وطوارئ (20%)</option>
+                </select>
+            </div>
+            <button onclick="addTransaction()" style="margin-top: 15px;">إضافة للرصيد المستهلك</button>
         </div>
 
-    <div class="card">
-        <h2>تسجيل مصروف</h2>
-        <input type="text" id="descInput" placeholder="وصف المصروف (مثال: بقالة، بنزين)...">
-        <div class="grid-2">
-            <input type="number" id="amountInput" placeholder="المبلغ..." min="0">
-            <select id="categoryInput">
-                <option value="needs">أساسيات والتزامات (50%)</option>
-                <option value="wants">متغيرات ومعيشة (30%)</option>
-                <option value="savings">ادخار وطوارئ (20%)</option>
-            </select>
-        </div>
-        <button onclick="addTransaction()" style="margin-top: 15px;">+ إضافة المصروف</button>
-    </div>
-
-    <div class="card">
-        <h2>آخر العمليات</h2>
-        <table>
-            <thead>
-                <tr>
-                    <th>الوصف</th>
-                    <th>الفئة</th>
-                    <th>المبلغ</th>
-                    <th>إجراء</th>
-                </tr>
-            </thead>
-            <tbody id="historyTable">
+        <div class="card">
+            <h2>سجل العمليات الأخير</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>الوصف</th>
+                        <th>المبلغ</th>
+                        <th>الفئة</th>
+                        <th>إجراء</th>
+                    </tr>
+                </thead>
+                <tbody id="historyTable">
+                    <!-- سيتم توليد السجل هنا -->
                 </tbody>
-        </table>
+            </table>
+        </div>
     </div>
 
-</div>
+    <!-- شريط التنقل السفلي -->
+    <div class="bottom-nav">
+        <div class="nav-item active" onclick="switchTab('dashboard')">
+            📊 لوحة التحكم
+        </div>
+        <div class="nav-item" onclick="switchTab('entries')">
+            ✍️ إدارة المدخلات
+        </div>
+    </div>
 
 <script>
-    // تهيئة البيانات من التخزين المحلي أو إنشاء بيانات جديدة
-    let appData = JSON.parse(localStorage.getItem('budgetAppData')) || {
+    // بيانات التطبيق
+    let appData = JSON.parse(localStorage.getItem('budgetAppDataV2')) || {
         salary: 0,
         transactions: []
     };
 
-    // نسب التوزيع (50/30/20)
+    // هيكل التوزيع
     const categories = {
-        needs: { label: 'الأساسيات والالتزامات', percentage: 0.50 },
-        wants: { label: 'المتغيرات والمعيشة', percentage: 0.30 },
+        fixed: { label: 'المصاريف الثابتة', percentage: 0.50 },
+        variable: { label: 'المصاريف المتغيرة', percentage: 0.30 },
         savings: { label: 'الادخار والطوارئ', percentage: 0.20 }
     };
 
-    // دالة لحفظ الراتب
-    function setSalary() {
-        const salary = parseFloat(document.getElementById('salaryInput').value);
-        if (isNaN(salary) || salary <= 0) {
-            alert("الرجاء إدخال مبلغ صحيح");
-            return;
+    // التنقل بين الصفحات
+    function switchTab(tabName) {
+        document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('.page-view').forEach(el => el.classList.remove('active'));
+        
+        if(tabName === 'dashboard') {
+            document.getElementById('dashboardPage').classList.add('active');
+            document.querySelectorAll('.nav-item')[0].classList.add('active');
+            updateDashboard();
+        } else {
+            document.getElementById('entriesPage').classList.add('active');
+            document.querySelectorAll('.nav-item')[1].classList.add('active');
+            updateEntriesPage();
         }
-        appData.salary = salary;
-        saveData();
-        updateUI();
     }
 
-    // دالة لإضافة مصروف
+    // حفظ الراتب
+    function setSalary() {
+        const salary = parseFloat(document.getElementById('salaryInput').value);
+        if (isNaN(salary) || salary <= 0) return alert("الرجاء إدخال مبلغ صحيح");
+        appData.salary = salary;
+        saveData();
+        updateEntriesPage();
+        alert("تم تحديث الراتب بنجاح");
+    }
+
+    // إضافة عملية
     function addTransaction() {
         const desc = document.getElementById('descInput').value;
         const amount = parseFloat(document.getElementById('amountInput').value);
         const category = document.getElementById('categoryInput').value;
 
-        if (!desc || isNaN(amount) || amount <= 0) {
-            alert("الرجاء إدخال الوصف والمبلغ بشكل صحيح");
-            return;
-        }
+        if (!desc || isNaN(amount) || amount <= 0) return alert("البيانات غير مكتملة");
 
         appData.transactions.push({
-            id: Date.now(),
-            desc,
-            amount,
-            category,
-            date: new Date().toLocaleDateString('ar-SA')
+            id: Date.now(), desc, amount, category, date: new Date().toISOString()
         });
 
         document.getElementById('descInput').value = '';
         document.getElementById('amountInput').value = '';
         
         saveData();
-        updateUI();
+        updateEntriesPage();
     }
 
-    // دالة لحذف مصروف
+    // حذف عملية
     function deleteTransaction(id) {
         appData.transactions = appData.transactions.filter(t => t.id !== id);
         saveData();
-        updateUI();
+        updateEntriesPage();
     }
 
-    // حفظ البيانات في المتصفح
+    // حفظ في المتصفح
     function saveData() {
-        localStorage.setItem('budgetAppData', JSON.stringify(appData));
+        localStorage.setItem('budgetAppDataV2', JSON.stringify(appData));
     }
 
-    // تحديث الواجهة
-    function updateUI() {
-        // تحديث ملخص الأرقام
-        document.getElementById('salaryInput').value = appData.salary > 0 ? appData.salary : '';
-        document.getElementById('totalBudget').innerText = appData.salary.toFixed(2);
-
+    // حساب المجاميع
+    function calculateTotals() {
         let totalSpent = 0;
-        let spentByCategory = { needs: 0, wants: 0, savings: 0 };
-
+        let spentByCat = { fixed: 0, variable: 0, savings: 0 };
+        
         appData.transactions.forEach(t => {
             totalSpent += t.amount;
-            if(spentByCategory[t.category] !== undefined) {
-                spentByCategory[t.category] += t.amount;
-            }
+            if(spentByCat[t.category] !== undefined) spentByCat[t.category] += t.amount;
         });
-
-        document.getElementById('totalSpent').innerText = totalSpent.toFixed(2);
-
-        // حساب المسموح صرفه يومياً للمتغيرات (Wants)
-        const wantsBudget = appData.salary * categories.wants.percentage;
-        const wantsRemaining = wantsBudget - spentByCategory.wants;
         
+        return { totalSpent, spentByCat };
+    }
+
+    // تحديث صفحة المدخلات (السجل والراتب)
+    function updateEntriesPage() {
+        document.getElementById('salaryInput').value = appData.salary > 0 ? appData.salary : '';
+        
+        const tbody = document.getElementById('historyTable');
+        tbody.innerHTML = '';
+        const recent = [...appData.transactions].reverse().slice(0, 10); // آخر 10 عمليات
+        
+        recent.forEach(t => {
+            tbody.innerHTML += `
+                <tr>
+                    <td>${t.desc}</td>
+                    <td style="font-weight: bold;">${t.amount.toFixed(2)}</td>
+                    <td style="color: var(--text-muted); font-size: 11px;">${categories[t.category].label}</td>
+                    <td><button class="btn-danger" onclick="deleteTransaction(${t.id})">إلغاء</button></td>
+                </tr>
+            `;
+        });
+    }
+
+    // تحديث لوحة التحكم (المؤشرات)
+    function updateDashboard() {
+        const { totalSpent, spentByCat } = calculateTotals();
+        
+        document.getElementById('dashTotalBudget').innerText = appData.salary.toLocaleString();
+        document.getElementById('dashTotalSpent').innerText = totalSpent.toLocaleString();
+
+        // حساب المتاح يومياً للمتغيرات
+        const varBudget = appData.salary * categories.variable.percentage;
+        const varRemaining = varBudget - spentByCat.variable;
         const today = new Date();
-        const lastDay = new Date(today.getFullYear(), today.getMonth() + 1, 0);
-        const daysLeft = lastDay.getDate() - today.getDate() + 1;
+        const daysLeft = new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate() - today.getDate() + 1;
         
-        const dailyAllowance = wantsRemaining > 0 ? (wantsRemaining / daysLeft) : 0;
-        document.getElementById('dailyAllowance').innerText = dailyAllowance.toFixed(2);
+        document.getElementById('dashDailyAllowance').innerText = varRemaining > 0 ? (varRemaining / daysLeft).toFixed(1) : 0;
 
-        // تحديث المحافظ (أشرطة التقدم)
-        const envelopesContainer = document.getElementById('envelopesContainer');
-        envelopesContainer.innerHTML = ''; // تفريغ المحتوى
+        // رسم أشرطة التوزيع
+        const envelopes = document.getElementById('dashEnvelopes');
+        envelopes.innerHTML = '';
 
         for (const [key, cat] of Object.entries(categories)) {
             const budget = appData.salary * cat.percentage;
-            const spent = spentByCategory[key];
+            const spent = spentByCat[key];
             const remaining = budget - spent;
             const percentageUsed = budget > 0 ? (spent / budget) * 100 : 0;
             
-            // تحديد لون الشريط بناءً على الاستهلاك
+            // نظام الألوان التحذيري
             let barColor = 'var(--success)';
-            if (percentageUsed > 75) barColor = 'var(--warning)';
-            if (percentageUsed > 90) barColor = 'var(--danger)';
+            if (percentageUsed >= 76) barColor = 'var(--warning)'; // تحذير أصفر عند 76%
+            if (percentageUsed >= 90) barColor = 'var(--danger)';  // خطر أحمر عند 90%
 
-            const envelopeHTML = `
-                <div class="category-group">
-                    <div class="category-header">
-                        <strong>${cat.label}</strong>
-                        <span>المتبقي: ${remaining.toFixed(2)} من ${budget.toFixed(2)}</span>
+            envelopes.innerHTML += `
+                <div class="progress-container">
+                    <div class="progress-header">
+                        <span>${cat.label}</span>
+                        <span>${percentageUsed.toFixed(1)}%</span>
                     </div>
                     <div class="progress-bar">
                         <div class="progress-fill" style="width: ${Math.min(percentageUsed, 100)}%; background-color: ${barColor};"></div>
                     </div>
-                    <div style="font-size: 12px; color: #7f8c8d; text-align: left; margin-top: 3px;">
-                        استُهلك: ${percentageUsed.toFixed(1)}%
+                    <div class="progress-sub">
+                        <span>المخصص: ${budget.toLocaleString()}</span>
+                        <span>المتبقي: <b dir="ltr">${remaining.toLocaleString()}</b></span>
                     </div>
                 </div>
             `;
-            envelopesContainer.innerHTML += envelopeHTML;
         }
-
-        // تحديث السجل
-        const historyTable = document.getElementById('historyTable');
-        historyTable.innerHTML = '';
-        
-        // عرض أحدث العمليات أولاً
-        const reversedTransactions = [...appData.transactions].reverse();
-        reversedTransactions.forEach(t => {
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-                <td>${t.desc}</td>
-                <td>${categories[t.category].label}</td>
-                <td>${t.amount.toFixed(2)}</td>
-                <td><button class="btn-danger" onclick="deleteTransaction(${t.id})">حذف</button></td>
-            `;
-            historyTable.appendChild(tr);
-        });
     }
 
-    // تشغيل الواجهة عند فتح الصفحة
-    updateUI();
+    // التشغيل الأولي
+    updateDashboard();
 </script>
 
 </body>
